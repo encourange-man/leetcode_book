@@ -1,3 +1,84 @@
+# 高频面试题
+
+## 146.手写LRU算法
+
+![](images/QQ20210405-164508.png)
+
+```java
+class LRUCache {
+
+   private class CacheNode {
+       CacheNode pre;
+       CacheNode next;
+       int key;
+       int value;
+
+       CacheNode(int key, int value) {
+           this.key = key;
+           this.value = value;
+           this.pre = null;
+           this.next = null;
+       }
+    }
+
+    private int capacity;
+    Map<Integer, CacheNode> cacheMap = new HashMap<>();
+    CacheNode head = new CacheNode(-1, -1);
+    CacheNode tail = new CacheNode(-1, -1);
+
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+        tail.pre = head;
+        head.next = tail;
+    }
+
+    public int get(int key) {
+        if(!cacheMap.containsKey(key)) {
+            return -1;
+        }
+
+        CacheNode currentNode = cacheMap.get(key);
+        //将使用后的数据移动到链表的极为
+        currentNode.next.pre = currentNode.pre;
+        currentNode.pre.next = currentNode.next;
+        moveToTail(currentNode);
+        return currentNode.value;
+    }
+
+    /**
+     * 移动节点到链表的尾部
+     * @param currentNode
+     */
+    private void moveToTail(CacheNode currentNode) {
+        currentNode.pre = tail.pre;
+        currentNode.pre.next = currentNode;
+        tail.pre = currentNode;
+        currentNode.next = tail;
+    }
+
+    public void put(int key, int value) {
+        // 数据存在更新最新值
+        if(get(key) != -1) {
+            cacheMap.get(key).value = value;
+            return;
+        }
+
+        //缓存数据达到上限，删除最近最少使用数据
+        if(cacheMap.size() == capacity) {
+            //删除最近最少使用的数据
+            cacheMap.remove(head.next.key);
+            head.next = head.next.next;
+            head.next.pre = head;
+        }
+        
+        //数据不存在，直接插入到链表的尾部
+        CacheNode insertNode = new CacheNode(key, value);
+        cacheMap.put(key, insertNode);
+        moveToTail(insertNode);
+    }
+}
+```
+
 
 
 # 树
@@ -444,6 +525,26 @@ class Solution {
 }
 ```
 
+# 双指针
+
+## 快慢指针
+
+### 判断链表是否有环
+
+
+
+### 寻找有环链表的起点
+
+
+
+
+
+## 碰撞指针
+
+
+
+
+
 
 
 # BFS
@@ -659,7 +760,35 @@ class Solution {
 }
 ```
 
-### 300. 最长上升子序列(LIS)
+### 62.不同路径
+
+![](images/QQ20210405-164508.png)
+
+状态：`dp[i][j]` 表示走到`(i,j)`的路径数量
+
+状态转移方程：
+
+```java
+class Solution {
+    public int uniquePaths(int m, int n) {
+        //定义状态
+        int[][] dp = new int[m][n];
+       for(int i = 0; i < m; i++) {
+            for(int j = 0; j < n; j++) {
+                dp[i][j] = (i > 0 && j > 0) ? dp[i][j] = dp[i-1][j] + dp[i][j-1] : 1;
+            }
+       }
+        return dp[m-1][n-1];
+    
+    }
+}
+```
+
+
+
+### 子序列问题
+
+#### 300. 最长上升子序列(LIS)
 
 <img src="images/QQ20210405-124549@2x.png" style="zoom:50%;" />
 
@@ -731,9 +860,236 @@ class Solution {
 - 时间复杂度：O(N^2)
 - 空间复杂度：O(N)
 
-### 1143. 最长上升公共子序列(LCS)
+#### 1143. 最长上升公共子序列(LCS)
 
 <img src="images/QQ20210405-125751@2x.png" style="zoom:50%;" />
 
 
+
+### 子串问题
+
+#### 5.最长回文串
+
+​	<img src="images/QQ20210405-155951.png" style="zoom:100%;" />
+
+​		![](images/QQ20210405-160332.png)
+
+ ```java
+class Solution {
+    public String longestPalindrome(String s) {
+        int n = s.length();
+        boolean[][] dp = new boolean[n][n];
+        String ans = "";
+        for (int l = 0; l < n; ++l) {
+            for (int i = 0; i + l < n; ++i) {
+                int j = i + l;
+                if (l == 0) {
+                    dp[i][j] = true;
+                } else if (l == 1) {
+                    dp[i][j] = (s.charAt(i) == s.charAt(j));
+                } else {
+                    dp[i][j] = (s.charAt(i) == s.charAt(j) && dp[i + 1][j - 1]);
+                }
+                if (dp[i][j] && l + 1 > ans.length()) {
+                    ans = s.substring(i, i + l + 1);
+                }
+            }
+        }
+        return ans;
+    }
+}
+ ```
+
+#### 647.回文子串
+
+![](images/QQ20210405-160716.png)
+
+![](images/QQ20210405-161012.png)
+
+
+
+```java
+class Solution {
+    public int countSubstrings(String s) {
+        int n = s.length(), ans = 0;
+        for (int i = 0; i < 2 * n - 1; ++i) {
+            int l = i / 2, r = i / 2 + i % 2;
+            while (l >= 0 && r < n && s.charAt(l) == s.charAt(r)) {
+                --l;
+                ++r;
+                ++ans;
+            }
+        }
+        return ans;
+    }
+}
+```
+
+### 字符串相关
+
+
+
+
+
+
+
+### 背包问题
+
+#### 494.目标和
+
+![](images/QQ20210405-161511.png)
+
+**方法一： 递归**
+
+```java
+public class FindTargetSumWays {
+
+    /**
+     *  思路：
+     *      使用递归枚举所有的可能，当我们处理到第 i 个数时，我们可以将它添加 + 或 -，
+     *      递归地搜索这两种情况。当我们处理完所有的 N 个数时，我们计算出所有数的和，并判断是否等于 S
+     *
+     *  空间复杂度：O（N），递归栈空间 N
+     *  时间复杂度：O（2^N）
+     */
+    int count = 0;
+    public int findTargetSumWays(int[] nums, int S) {
+        calculate(nums, 0, 0, S);
+        return count;
+    }
+    public void calculate(int[] nums, int i, int sum, int S) {
+        if (i == nums.length) {
+            if (sum == S)
+                count++;
+        } else {
+            calculate(nums, i + 1, sum + nums[i], S);
+            calculate(nums, i + 1, sum - nums[i], S);
+        }
+    }
+}
+```
+
+**方法二：动态规划**
+
+```java
+
+```
+
+#### 416.分割等和子集
+
+![](images/QQ20210405-162954.png)
+
+**思路：**
+
+如果换种思路的话，就会发现这是一个典型的背包问题，因为两个子集的和相等。所有可以看成：**在n个物品中选出一定的物品，填满sum/2的背包容量（sum为整个数组的和），但是和背包问题不同的是，我们需要将背包完全填满**。
+
+> 状态的定义：F(n,C)：考虑将n个物品填满容量为C的背包
+>
+> 状态转移方程：**F(i,c) = F(i-1,c) || F(i-1,c-w(i))**
+
+- 首先判断是否能填满sum/2的空间，所以返回是个boolean值
+- F(i-1,c), 如果使用i-1个物品就可以将背包填满，那么i个物品一定能填满大小为C的容器
+- F(i-1,c-w(i))，如果i-1个物品能够填满c-w(i)的背包，那么在让入第i个物品刚好能填满，所以这样也是可以的
+
+```c++
+class Solution {
+private:
+    //memo[i][c] 表示使用索引为[0..i]的这些元素，是否可以完全填充一个容量为C的背包
+    //-1表示未计算，0表示不可以填充，1表示可以填充
+    vector<vector<int>> memo;
+    
+    //使用nums[0..index]，是否可以完全填充一个容量为sum的背包
+    bool tryPartition(const vector<int>&nums, int index, int sum){
+        //如果背包已经没有空间，说明已经填充好了背包
+        if(sum == 0)
+            return true;
+        
+        //sum<0:说明物品还有剩余，index<0:说明容量还有剩余，这两种情况都将返回false
+        if(sum<0 || index<0)
+            return false;
+        
+        if(memo[index][sum] != -1)
+            return memo[index][sum] = 1;
+            
+        //同样对于nums[index]有两种情况，包含和不包含
+        memo[index][sum] =(tryPartition(nums,index-1,sum) || tryPartition(nums,index-1,sum-nums[index])) ?1 :0 ;
+        return memo[index][sum] ==1 ;
+    }
+public:
+    bool canPartition(vector<int>& nums) {
+         //首先计算整个数组的sum
+        int sum = 0;
+        for(int i = 0; i<nums.size(); i++)
+            sum+=nums[i];
+        
+        //如果nums本身就是奇数，是不可能拆分成两个自己的
+        if(sum%2 !=0)
+            return false;
+        
+        memo = vector<vector<int>>(nums.size(), vector<int>(sum/2+1,-1));
+        return tryPartition(nums,nums.size()-1,sum/2);
+    }
+};
+```
+
+**动态规划解决这个问题；**
+
+```c++
+class Solution {  
+public:
+    bool canPartition(vector<int>& nums) {
+         //首先计算整个数组的sum
+        int sum = 0;
+        for(int i = 0; i<nums.size(); i++)
+            sum+=nums[i];
+        
+        //如果nums本身就是奇数，是不可能拆分成两个自己的
+        if(sum%2 !=0)
+            return false;
+        
+        int n = nums.size();
+        int c = sum/2;
+        vector<bool> memo(c+1,false);
+        
+        for(int i=0;i<=c;i++)
+            memo[i] = (nums[0]==i);
+        for(int i=1;i<n;i++)
+            for(int j=c;j>=nums[i];j--)
+                memo[j] = memo[j]||memo[j-nums[i]];
+        return memo[c];
+    }
+};
+```
+
+#### 139.单词拆分（完全背包问题）
+
+![](images/QQ20210405-202259.png)
+
+参考指导：https://leetcode-cn.com/problems/word-break/solution/139-dan-ci-chai-fen-hui-su-fa-wan-quan-b-0zwf/
+
+**状态定义**：`dp[i]`表示以`i`为结尾的字符串`s[0,i]`，是否可以被拆分为一个或多个在字典中出现的单词。
+
+```java
+class Solution {
+    public boolean wordBreak(String s, List<String> wordDict) {
+			int n = s.length();
+      boolean[] dp = new boolean[n + 1];
+      //初始情况
+      dp[0] = true;
+      
+      //背包是s字符串，物品是wordDict中每一个word，向背包里面装物品
+      for(int i = 1; i <= n; i++ ) {
+        for(String word: wordDict) {
+          int len = word.length();
+          //只有当分割的s[0,1]的长度大于等于wordDict字典中的字符时，才有可能被拆分
+          if(len <= i && word.equals(s.substring(i - len, i))){
+             	//要么装包，要么不装包
+            	dp[i] = dp[i] || dp[i - len];
+          }
+        }
+      }
+        return dp[n];
+    }
+}
+```
 
