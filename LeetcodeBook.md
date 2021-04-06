@@ -137,7 +137,7 @@ int maximum_depth(TreeNode* root) {
 }
 ```
 
-## 深序遍历 (DFS)
+## 【深序遍历 (DFS)】
 
 ### 104.二叉树的深度
 
@@ -428,7 +428,7 @@ class Solution {
 
 
 
-## 二叉树的还原
+## 【二叉树的还原】
 
 ### 105.根据前序和中序还原二叉树
 
@@ -663,6 +663,21 @@ class Solution {
 
 # 动态规划
 
+动态规划中每一个状态一定是由上一个状态推导出来的，**这一点就区分于贪心**，贪心没有状态推导，而是从局部直接选最优的。
+
+
+
+动态规划的解决步骤：
+
+- 确定状态的定义dp[]
+- 确定状态转移方程
+- 如何初始化
+- 确定遍历顺序
+
+
+
+
+
 ## 题解
 
 ### 343. 整数拆分
@@ -764,9 +779,9 @@ class Solution {
 
 ![](images/QQ20210405-164508.png)
 
-状态：`dp[i][j]` 表示走到`(i,j)`的路径数量
+**状态**：`dp[i][j]` 表示走到`(i,j)`的路径数量
 
-状态转移方程：
+**状态转移方程**：`dp[i][j] = dp[i-1][j] + dp[i][j-1]`。
 
 ```java
 class Solution {
@@ -784,9 +799,42 @@ class Solution {
 }
 ```
 
+### 63.不同路径II
+
+![](images/WX20210406-113520@2x.png)
+
+![](images/WX20210406-113608@2x.png)
+
+**基于上面的不同路径的思路，如果有障碍物，就保持`dp[i][j]=0`即可，当然相应的初始化逻辑也的修改一下**
+
+```java
+class Solution {
+    public int uniquePathsWithObstacles(int[][] obstacleGrid) {
+        int n = obstacleGrid.length;
+        int m = obstacleGrid[0].length;
+        int[][] dp = new int[n][m];
+    
+        //初始化情况
+        for(int i = 0; i < n && obstacleGrid[i][0] == 0; i++) { dp[i][0] = 1;}
+        for(int j = 0; j< m && obstacleGrid[0][j] == 0; j++) { dp[0][j] = 1;}
+
+        //状态转移过程
+        for(int i = 1; i < n; i++) {
+            for(int j = 1; j < m; j++) {
+                if(obstacleGrid[i][j] == 1) {
+                    continue;
+                }
+                dp[i][j] = dp[i-1][j] + dp[i][j-1];
+            }
+        }
+        return dp[n-1][m-1];
+    }
+}
+```
 
 
-### 子序列问题
+
+### 【子序列问题】
 
 #### 300. 最长上升子序列(LIS)
 
@@ -866,7 +914,7 @@ class Solution {
 
 
 
-### 子串问题
+### 【子串问题】
 
 #### 5.最长回文串
 
@@ -925,15 +973,9 @@ class Solution {
 }
 ```
 
-### 字符串相关
+### 【背包问题】
 
-
-
-
-
-
-
-### 背包问题
+<img src="images/WX20210406-163825@2x.png" style="zoom:50%;" />
 
 #### 494.目标和
 
