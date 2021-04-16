@@ -2,7 +2,7 @@
 
 ## 146.手写LRU算法
 
-![](images/QQ20210405-164508.png)
+![](images/QQ20210405-200630.png)
 
 ```java
 class LRUCache {
@@ -81,7 +81,31 @@ class LRUCache {
 
 
 
-# 树
+# 1.数组
+
+
+
+# 2.链表
+
+## 快慢指针
+
+### 判断链表是否有环
+
+
+
+### 寻找有环链表的起点
+
+
+
+
+
+## 碰撞指针
+
+
+
+
+
+# 3.树
 
 通常，我们可以通过 “自顶向下” 或 “自底向上” 的递归来解决树问题。
 
@@ -525,29 +549,13 @@ class Solution {
 }
 ```
 
-# 双指针
-
-## 快慢指针
-
-### 判断链表是否有环
-
-
-
-### 寻找有环链表的起点
-
-
-
-
-
-## 碰撞指针
 
 
 
 
 
 
-
-# BFS
+# 4.BFS
 
 ## BFS 模板
 
@@ -649,7 +657,7 @@ class Solution {
 
 
 
-# 贪心算法
+# 5.贪心算法
 
 ## 781.森林中的兔子【数学公式？】
 
@@ -661,11 +669,9 @@ class Solution {
 
 
 
-# 动态规划
+# 6.动态规划
 
 动态规划中每一个状态一定是由上一个状态推导出来的，**这一点就区分于贪心**，贪心没有状态推导，而是从局部直接选最优的。
-
-
 
 动态规划的解决步骤：
 
@@ -673,8 +679,6 @@ class Solution {
 - 确定状态转移方程
 - 如何初始化
 - 确定遍历顺序
-
-
 
 
 
@@ -831,6 +835,114 @@ class Solution {
     }
 }
 ```
+
+### 42. 接雨水
+
+ ![](images/QQ20210409-101043.png)
+
+
+
+**方法一：暴力求解**
+
+通过观察发现：**对于下标`i`的位置能接的水 = 两边最大高度的较小值 - 当前高度的值**
+
+- 初始化 `height = 0 `，记录能接多少雨水
+
+使用中心扩散法找两边最大高度的较小值
+
+- 初始化`maxLeft = 0`，`maxRight = 0`
+
+- 从当前元素向左扫描，`maxLeft = Math.min(maxLeft, height[i])`
+- 从当前元素向右扫描，`rightLeft = Math.right(rightLeft, height[j])`
+
+更新结果：
+
+- `height += Math.min(maxLeft, maxRight) - height[i]`
+
+
+
+```java
+public int trap(int[] height) {
+  int high = 0;
+  
+  //注意：考虑的范围是[1, height - 1]，通过例子你会发现 i = 0 和 i = height - 1 不在考虑范围内
+  for(int i = 1; i < height.length - 1; i++) {
+    int maxLeft = 0;
+    int maxRight = 0;
+    //向左扩散[0, i]，寻找左边大于当前高度的最大高度
+    for(int j = i; j >= 0; j--) {
+      maxLeft = Math.max(maxLeft, height[j]);
+    }
+    //向右扩散[i, height.length - 1]，寻找右边大于当前高度的最大高度
+    for(int j = i; j < height.length; j++) {
+      maxRight = Math.max(maxRight, height[j]);
+    }
+    
+		high += Math.min(maxLeft, maxRight) - height[i];
+  }
+  return high;
+}
+```
+
+时间复杂度：
+
+- 时间复杂度：O(n^2)，每个元素都需要向左向右扫描
+- 空间复杂度：O(1)
+
+
+
+**方法二：动态规划**
+
+在暴力方法中，对于每个元素我们都要从左和从右扫描一遍，其中就包含了很多的重复计算，所以优化方向：我们提前存储每个元素的向左和向右高度最大值
+
+```java
+class Solution {
+   public int trap(int[] height) {
+        if(height.length == 0) {
+            return 0;
+        }
+        int high = 0;
+        int[] leftMax = new int[height.length];
+        int[] rightMax = new int[height.length];
+  	
+        leftMax[0] = height[0];
+        for(int i = 1; i < height.length; i++) {
+            leftMax[i] = Math.max(height[i], leftMax[i-1]);
+        }
+  
+        rightMax[rightMax.length - 1] = height[height.length - 1];
+        for (int i = height.length - 2; i >= 0; i--) {
+            rightMax[i] = Math.max(height[i], rightMax[i + 1]);
+        }
+        for (int i = 1; i < height.length - 1; i++) {
+            high += Math.min(leftMax[i], rightMax[i]) - height[i];
+        }
+  	    return high;
+    }
+}
+```
+
+时间复杂度分析：
+
+- 时间复杂度：O(n)
+- 空间复杂度：O(n)
+
+
+
+**方法三：双指针【todo】**
+
+```java
+
+```
+
+复杂度分析：
+
+- 时间复杂度：O(n)
+- 空间复杂度：O(1)
+
+
+
+
 
 
 
