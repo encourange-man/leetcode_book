@@ -6,7 +6,6 @@
 
 ```java
 class LRUCache {
-
    private class CacheNode {
        CacheNode pre;
        CacheNode next;
@@ -655,6 +654,208 @@ class Solution {
 
 
 
+# 全排列
+
+**「回溯法解决的问题都可以抽象为树形结构」**，是的，我指的是所有回溯法的问题都可以抽象为树形结构！
+
+因为回溯法解决的都是在集合中递归查找子集，**「集合的大小就构成了树的宽度，递归的深度，都构成的树的深度」**
+
+
+
+回溯参数：
+
+因为回溯算法需要的参数可不像二叉树递归的时候那么容易一次性确定下来，所以一般是先写逻辑，然后需要什么参数，就填什么参数
+
+
+
+回溯终止条件：
+
+一般来说搜到叶子节点了，也就找到了满足条件的一条答案，把这个答案存放起来，并结束本层递归。
+
+![](images/WX20210419-142524.png)
+
+
+
+回溯算法的模版：
+
+```java
+void backTracking(参数) {
+  if(终止条件) {
+    	存放结果
+     	return;
+  }
+  
+  for(选项：本层集合中元素) {
+    	处理节点；
+      backTracking(路径，选择列表);
+    	回溯，撤销处理结果
+  }
+}
+```
+
+
+
+
+
+
+
+## 【组合问题】
+
+### 77.组合
+
+![](images/WX20210419-141226@2x.png)
+
+
+
+```java
+class Solution {
+    public List<List<Integer>> combine(int n, int k) {
+        List<List<Integer>> result = new ArrayList<>();
+        List<Integer> path = new ArrayList<Integer>();
+        backTracking(n, k, path, result, 1);
+        return result;
+    }
+	
+    //如果想要删除集合的最后一个元素，也可以选择使用LinkedList
+    private void backTracking(int n ,int k, List<Integer> path, List<List<Integer>> result, int startIndex) {
+        //终止条件
+        if(path.size() == k) {
+            result.add(new ArrayList<Integer>(path));
+            return ;
+        }
+
+        //遍历选项，选择区间[startIndex, n]
+        for(int i = startIndex; i <= n ; i++) {
+            path.add(i);
+            //递归寻找下一个可能
+            backTracking(n, k, path, result, i + 1);
+            path.remove(path.size() - 1);
+        }
+    }
+}
+```
+
+剪枝优化：
+
+![](images/WX20210419-153826.png)
+
+**「如果for循环选择的起始位置之后的元素个数 已经不足 我们需要的元素个数了，那么就没有必要搜索了」**
+
+1. 已经选择的元素个数：path.size();
+2. 还需要的元素个数为: k - path.size();
+3. 在集合n中至多要从该起始位置 : n - (k - path.size()) + 1，开始遍历
+
+**有个+1呢，因为包括起始位置，我们要是一个左闭的集合。**
+
+​	举个例子，n = 4，k = 3， 目前已经选取的元素为0（path.size为0），n - (k - 0) + 1 即 4 - ( 3 - 0) + 1 = 2。
+
+
+
+所以优化后的整体代码：
+
+```java
+ private void backTracking(int n ,int k, List<Integer> path, List<List<Integer>> result, int startIndex) {
+        //终止条件
+        if(path.size() == k) {
+            result.add(new ArrayList<Integer>(path));
+            return ;
+        }
+
+        //遍历选项，选择区间[startIndex, n]
+        for(int i = startIndex; i <= n - (k - path.size()) + 1; i++) {
+            path.add(i);
+            //递归寻找下一个可能
+            backTracking(n, k, path, result, i + 1);
+            path.remove(path.size() - 1);
+        }
+ }
+```
+
+
+
+### 216. 组合总和III
+
+![](images/WX20210419-160731.png)
+
+```java
+class Solution {
+    private  List<List<Integer>> result = new ArrayList<>();
+
+    public List<List<Integer>> combinationSum3(int k, int n) {
+        LinkedList<Integer> path = new LinkedList<>();
+        backTracking(1, 0, k, n, path);
+        return result;
+    }
+	
+  	//这里使用sum来标记path集合元素的总和， 当然这里也可以剪枝
+    private void backTracking(int startIndex, int sum, int k, int n, LinkedList<Integer> path) {
+        //终止条件
+      	if(path.size() == k) {
+            if(sum == n) {
+                result.add(new LinkedList<>(path));
+            }
+            return;
+        }
+
+        for(int i = startIndex; i <= 9; i++) {
+            sum += i;
+            path.addLast(i);
+            //回溯，撤销选择
+            backTracking(i + 1, sum, k, n, path);
+            sum -= i;
+            path.removeLast();
+        }
+    }
+}
+```
+
+
+
+### 17.电话号码的组合
+
+![](images/WX20210419-193822.png)
+
+```java
+class Solution {
+    
+   /**
+     * 每个字符数字所代表的字符组合
+     */
+    private final String[] NUMBER_LETTER = {" ", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
+    private List<String> result = new ArrayList<>();
+
+
+    public List<String> letterCombinations(String digits) {
+        if(digits.length() == 0) {
+            return result;
+        }
+        
+        calculateLetter(digits, 0 , "");
+        return result;
+    }
+  
+  	 //
+  	 private void calculateLetter(String digits, int index, String previousStr) {
+        if(index == digits.length()) {
+            result.add(previousStr);
+            return ;
+        }
+        //当前数字所代表的字符组合集
+        char[] chars = digits.toCharArray();
+        char num = chars[index];
+        char[] letters = NUMBER_LETTER[num - '0'].toCharArray();
+
+        for (int i = 0; i < letters.length; i++) {
+            calculateLetter(digits, index + 1, previousStr + letters[i] );
+        }
+
+        return;
+    }
+}
+```
+
+
+
 
 
 # 5.贪心算法
@@ -965,7 +1166,7 @@ class Solution {
 
 - **定义状态转移方程**
 
-> LIS(i) = max(1 + LIS(j)  if nums[i] > nums[j])
+> **LIS(i) = max(1 + LIS(j) )  if nums[i] > nums[j]**
 >
 > 只要 nums[i] 严格大于在它位置之前的某个数，那么 nums[i] 就可以接在这个数后面形成一个更长的上升子序列
 >
@@ -1023,6 +1224,66 @@ class Solution {
 #### 1143. 最长上升公共子序列(LCS)
 
 <img src="images/QQ20210405-125751@2x.png" style="zoom:50%;" />
+
+- 状态定义：
+
+  >  dp(m-1, n-1) 表示 test1[0 .. m-1]和 test2[0 .. n-1] 的最长公共子序列的长度
+
+- 状态转移
+
+  > 这里分两种情况：
+  >
+  > 情况1:    test1[i-1] == text2[j-1]，说明找到一个公共元素，此时dp[i, j] = dp[i-1, j-1] +1
+  >
+  > 情况2：text1[i-1] !=  text2[j-1]不相同，那就看看text1[0, i - 2]与text2[0, j - 1]的最长公共子序列 和 text1[0, i - 1]与text2[0, j - 2]的最长公共子序列，取最大的
+  >
+  > 
+  >
+  > 所以： **dp[i] [j] = max(dp[i-1, j] , dp[i, j-1])**
+
+  ```java
+  if (text1[i - 1] == text2[j - 1]) {
+      dp[i][j] = dp[i - 1][j - 1] + 1;
+  } else {
+      dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+  }
+  ```
+
+题解：
+
+```java
+class Solution {
+    public int longestCommonSubsequence(String text1, String text2) {
+        //这里初始化dp数组长度为m+1 的原因是：因为text1或text2和空串的最长公共子序列都为0
+        int m = text1.toCharArray().length;
+        int n = text2.toCharArray().length;
+        int[][] dp = new int[m + 1][n + 1];
+
+        for(int i = 1; i <= m; i++) {
+            char s1 = text1.charAt(i -1);
+            for(int j = 1; j <= n; j++) {
+                char s2 = text2.charAt(j - 1);
+                if(s1 == s2){
+                    //说明找到一个元素，此时dp[i][j] = dp[i-1][j-1] + 1
+                    dp[i][j] = dp[i-1][j-1] + 1;
+                }else{
+                    //不想等时，dp[i][j] 就等于dp[i-1][j] 和 dp[i][j-1] 的最大值
+                    dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
+                }
+            }
+        }
+        return dp[m][n];
+    }
+}
+```
+
+
+
+
+
+#### 718.最长重复子数组
+
+
 
 
 
